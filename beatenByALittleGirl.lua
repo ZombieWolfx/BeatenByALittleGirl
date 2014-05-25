@@ -265,7 +265,7 @@ function OnDraw()
 	end
 	
 	
-	if flashUltPos ~= nil and DCConfig.useAutoUlt and DCConfig.renderUltMarker then
+	if flashUltPos ~= nil and DCConfig.useAutoUlt and DCConfig.renderUltMarker and myHero:CanUseSpell(_R) == READY and not existTibbers then
 		DrawText3D(tostring(flashUltPos.hits) .. " hits - Dmg: " .. tostring(math.floor(flashUltPos.dmg)),flashUltPos.pos.x, flashUltPos.pos.y, flashUltPos.pos.z, 16, RGB(255,255,255), true)
 		DrawCircle(flashUltPos.pos.x, flashUltPos.pos.y, flashUltPos.pos.z, ultiRadius, 0x444400)
 	end
