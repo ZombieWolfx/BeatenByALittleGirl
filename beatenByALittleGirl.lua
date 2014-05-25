@@ -39,7 +39,7 @@ function OnLoad()
 	
 	DCConfig:addParam("autoCarryKey", "Infight Mode", SCRIPT_PARAM_ONKEYDOWN, false, string.byte(" "))
 	DCConfig:addParam("flashComboKey", "Full commit", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
-	
+	DCConfig:addParam("mouseWalk", "Mousewalk when infight", SCRIPT_PARAM_ONOFF, true, 32)
 	
 	DCConfig:addParam("info1", "Lasthitting options:", SCRIPT_PARAM_INFO, "")
 	DCConfig:addParam("lasthitWithQ", "Lasthit with Q", SCRIPT_PARAM_LIST, 1, {"Always", "Never", "No enemys close" })
@@ -47,8 +47,6 @@ function OnLoad()
 	DCConfig:addParam("lasthitHealthEnemy", "Only lasthit if enemy health over: ", SCRIPT_PARAM_SLICE, 20, 0, 100, 0)
 	DCConfig:addParam("lasthitHealthMe", "Only lasthit if own health over: ", SCRIPT_PARAM_SLICE, 20, 0, 100, 0)
 	
-	DCConfig:permaShow("lasthitWithQ")
-	DCConfig:permaShow("useStunToLasthit")
 	
 	DCConfig:addParam("info2", "Ult options:", SCRIPT_PARAM_INFO, "")
 	DCConfig:addParam("finishKills", "Finish low people with combo", SCRIPT_PARAM_ONOFF, false, 32)
@@ -286,19 +284,15 @@ function OnDraw()
 	end
 	
 	
-	if optimalConePos ~= nil then
-		DrawText3D("Cone: " .. tostring(optimalConePos.hits),myHero.x, myHero.y, myHero.z, 16, RGB(255,255,255), true)
-	end
-	
-
-	
 end
 
 
 
 function fullCombo(fullCommit)
 	-- WOMBO COMBO
+	if DCConfig.mouseWalk then
 	myHero:MoveTo(mousePos.x,mousePos.z)
+	end
 	
 	if ValidTarget(ts.target, range) then
 	
