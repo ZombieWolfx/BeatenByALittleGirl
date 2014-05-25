@@ -4,7 +4,8 @@ require "AllClass"
 
 if myHero.charName ~= "Annie" then return end
 
-local comboKey = 32
+local autoCarryKey = 32
+local flashComboKey = 88
 
         
 local hasIgnite, hasFlash = nil, nil
@@ -22,11 +23,13 @@ local fRange = 400
 
 local stunReady, existTibbers = false, false
 local ts = TargetSelector(TARGET_LOW_HP, range )
+local flashTs = TargetSelector(TARGET_LOW_HP, range+fRange )
 local enemyList = {}
 local combos = {}
 local DCConfig
 local enemysInRange = {}
 
+local tibbersObj = nil
 
 
 function OnLoad()
@@ -75,6 +78,7 @@ end
 function OnTick()
 
 	ts:update()
+	flashTs:update()
 	
 	if isRecalling(myHero) then return end
 
@@ -101,24 +105,38 @@ function OnTick()
 	for _, hero in pairs(enemyList) do
 		if DCConfig.finishKills and enemysInRangeCount < 3 then 
 			if fullComboDmg(hero) > hero.health and stunReady then
-				fullCombo()
+				fullCombo(false)
 			end
 		end
 	end
 	
-	if IsKeyDown(comboKey) then
-		fullCombo()
+	if IsKeyDown(autoCarryKey) then
+		fullCombo(false)
 	end
 	
 	
-	--if enemysInRangeCount > DCConfig.autoHarassCount then
-	-- AUTO Q HARASS and W on multitarget (no stun)	
+	if IsKeyDown(flashComboKey) then
+
+		if ValidTarget(flashTs.target) and stunReady then
+		
+			if myHero:GetDistance(flashTs.target) > range then
+				CastSpell(hasFlash, flashTs.target.x,flashTs.target.z)				
+			end
+			CastSpell(_Q, flashTs.target)
+			fullCombo(true)
+		end
+	end	
+	
+	
+
+	
+	-- AUTO Q HARASS and W on multitarget 
 	optimalConePos = getOptimalPosCone(wRange, wAngle)
 
 	if stunReady then
 		if enemysInRangeCount < 2 then
 			if DCConfig.autoQ and myHero:CanUseSpell(_Q) == READY and ValidTarget(ts.target, range) then
-				CastSpell(_Q, ts.target)			
+				CastSpell(_Q, ts.target)
 			end		
 		else
 			if optimalConePos ~= nil and optimalConePos.hits > DCConfig.autoUltCount then
@@ -145,8 +163,24 @@ function OnTick()
 	
 	
 	
+	
+	-- if enemy tibbers!
+	--[[if tibbersObj ~= nil and tibbersObj.team ~= myHero.team then
+		print(tibbersObj.team)
+		tibbersObj = nil
+		existTibbers = false
+	end]]
+	
+	-- tibbers autoattack
+	if ValidTarget(ts.target) and existTibbers then
+		local tD = GetDistance(tibbersObj, ts.target)
+		if tD > 300 and myHero:CanUseSpell(_R) == READY then
+			CastSpell(_R, ts.target)
+		end
+	end	
 
 	
+	-- AUTO FLASH ULT
 	if DCConfig.useAutoUlt then
 		flashUltPos = getOptimalPos(ultiRange+fRange, ultiRadius)
 			
@@ -163,11 +197,14 @@ function OnTick()
 	end
 	
 	
+
+	
+	
 	
 	-- LASTHITTING
 	if myHero.health/myHero.maxHealth*100 < DCConfig.lasthitHealthMe and enemysInRangeCount > 0 then return end
 	if lowestEnemyHealth < DCConfig.lasthitHealthEnemy then return end
-	
+	if IsKeyDown(autoCarryKey) then return end --dont lasthit when infight mode
 	
 	if DCConfig.lasthitWithQ == 1 or DCConfig.lasthitWithQ == 3 then
 		local enemyMinions = minionManager(MINION_ENEMY, range, player, MINION_SORT_HEALTH_ASC)
@@ -213,10 +250,10 @@ end
 function OnDraw()
 	if not myHero.dead then
 		if DCConfig.renderComboRange then
-		DrawCircle(myHero.x, myHero.y, myHero.z, range, ARGB(100, 255, 150, 0))
+		DrawCircle(myHero.x, myHero.y, myHero.z, range, ARGB(100, 0, 150, 255))
 		end
 		if DCConfig.renderFlashUltRange then
-		DrawCircle(myHero.x, myHero.y, myHero.z, ultiRange+fRange, ARGB(100, 255, 50, 0))
+		DrawCircle(myHero.x, myHero.y, myHero.z, ultiRange+fRange, ARGB(100, 0, 150, 255))
 		end
 	end
 	
@@ -233,23 +270,33 @@ function OnDraw()
 
 			
 			if fullComboDmg(hero) > hero.health then
-				DrawText3D("CAN KILL",hero.x, hero.y, hero.z, 16, RGB(255,255,255), true)
+				DrawText3D("CAN KILL",hero.x, hero.y+100, hero.z, 16, RGB(255,255,255), true)
 			end
 			
 		end
 	end
 	
-	--[[
+	
 	if optimalConePos ~= nil then
 		DrawText3D("Cone: " .. tostring(optimalConePos.hits),myHero.x, myHero.y, myHero.z, 16, RGB(255,255,255), true)
-	end]]
+	end
+	
+
+	
 end
 
 
 
-function fullCombo()
+function fullCombo(fullCommit)
 	-- WOMBO COMBO
 	if ValidTarget(ts.target, range) then
+	
+		if fullCommit then
+			DFGSlot = GetInventorySlotItem(3128)
+			DFGREADY = (DFGSlot ~= nil and myHero:CanUseSpell(DFGSlot) == READY)
+			if DFGREADY then CastSpell(DFGSlot, ts.target) end
+		end
+				
 		CastSpell(_Q, ts.target)
 		
 		if optimalConePos ~= nil and optimalConePos.hits > 1 then
@@ -260,14 +307,10 @@ function fullCombo()
 		
 		CastSpell(_E)
 		
-		if myHero:CanUseSpell(_R) == READY and not existTibbers then -- and stunReady
+		if myHero:CanUseSpell(_R) == READY and not existTibbers and fullCommit then -- and stunReady
 			
 			local p = getOptimalPos(ultiRange, ultiRadius)
 			if p ~= nil then
-			
-				DFGSlot = GetInventorySlotItem(3128)
-				DFGREADY = (DFGSlot ~= nil and myHero:CanUseSpell(DFGSlot) == READY)
-				if DFGREADY then CastSpell(DFGSlot, ts.target) end
 			
 				CastSpell(_R, p.pos.x,p.pos.z)
 				
@@ -282,7 +325,7 @@ function fullCombo()
 			
 		end
 		
-		if DCConfig.whenToIgnite == 1 then
+		if DCConfig.whenToIgnite == 1 and fullCommit then
 			if hasIgnite ~= nil then
 				CastSpell(hasIgnite, ts.target) 
 			end	
@@ -328,20 +371,20 @@ function OnCreateObj(object)
         if object.name == "StunReady.troy" then stunReady = true end
         
 		if object.name == "AnnieTibbers_Idle_body.troy" then 
-			DelayAction(function(object, timer, gtimer)
-				
-				if object.team == myHero.team then
-					existTibbers = true
-				end
 
-			end, 1, { object, GetTickCount(), GetGameTimer() } )
+			existTibbers = true
+			tibbersObj = object
+
 		end
 end
  
  
 function OnDeleteObj(object)
         if object.name == "StunReady.troy" then stunReady = false end
-        if object.name == "AnnieTibbers_Idle_body.troy" and object.team == myHero.team then existTibbers = false end  
+        if object.name == "AnnieTibbers_Idle_body.troy" then
+			existTibbers = false 
+			tibbersObj = nil
+		end  
 	
 end
 
@@ -558,7 +601,13 @@ function fullComboDmg(hero)
 		return 0
 	end
 
+
 	local fullComboDmg = 0
+	
+	DFGSlot = GetInventorySlotItem(3128)
+	DFGREADY = (DFGSlot ~= nil and myHero:CanUseSpell(DFGSlot) == READY)
+	if DFGREADY then fullComboDmg = fullComboDmg + getDmg("DFG",hero,myHero) end
+	
 	if myHero:CanUseSpell(_Q) == READY then
 		fullComboDmg = fullComboDmg + getDmg("Q",hero,myHero)
 	end
