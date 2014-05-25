@@ -212,7 +212,8 @@ function OnTick()
 	-- LASTHITTING
 	if myHero.health/myHero.maxHealth*100 < DCConfig.lasthitHealthMe and enemysInRangeCount > 0 then return end
 	if lowestEnemyHealth < DCConfig.lasthitHealthEnemy then return end
-	if DCConfig.autoCarryKey  then return end --dont lasthit when infight mode
+	if DCConfig.autoCarryKey then return end --dont lasthit when infight mode
+	if DCConfig.flashComboKey then return end
 	
 	if DCConfig.lasthitWithQ == 1 or DCConfig.lasthitWithQ == 3 then
 		local enemyMinions = minionManager(MINION_ENEMY, range, player, MINION_SORT_HEALTH_ASC)
