@@ -298,6 +298,8 @@ end
 
 function fullCombo(fullCommit)
 	-- WOMBO COMBO
+	myHero:MoveTo(mousePos.x,mousePos.z)
+	
 	if ValidTarget(ts.target, range) then
 	
 		if fullCommit then
