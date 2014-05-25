@@ -4,8 +4,8 @@ require "AllClass"
 
 if myHero.charName ~= "Annie" then return end
 
-local autoCarryKey = 32
-local flashComboKey = 88
+--local autoCarryKey = 32
+--local flashComboKey = 88
 
         
 local hasIgnite, hasFlash = nil, nil
@@ -36,6 +36,11 @@ function OnLoad()
 	print("J4's annie loaded!")
 	
 	DCConfig = scriptConfig("Beaten by a little girl", "UJISTD")
+	
+	DCConfig:addParam("autoCarryKey", "Infight Mode", SCRIPT_PARAM_ONKEYDOWN, false, string.byte(" "))
+	DCConfig:addParam("flashComboKey", "Full commit", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
+	
+	
 	DCConfig:addParam("info1", "Lasthitting options:", SCRIPT_PARAM_INFO, "")
 	DCConfig:addParam("lasthitWithQ", "Lasthit with Q", SCRIPT_PARAM_LIST, 1, {"Always", "Never", "No enemys close" })
 	DCConfig:addParam("useStunToLasthit", "Use stun to lasthit", SCRIPT_PARAM_LIST, 3, {"Always", "Never", "No enemys close" })
@@ -110,20 +115,23 @@ function OnTick()
 		end
 	end
 	
-	if IsKeyDown(autoCarryKey) then
+	if DCConfig.autoCarryKey then
 		fullCombo(false)
 	end
 	
 	
-	if IsKeyDown(flashComboKey) then
+	if DCConfig.flashComboKey then
 
-		if ValidTarget(flashTs.target) and stunReady then
-		
-			if myHero:GetDistance(flashTs.target) > range then
-				CastSpell(hasFlash, flashTs.target.x,flashTs.target.z)				
+		if ValidTarget(flashTs.target) then
+			if stunReady then
+				if myHero:GetDistance(flashTs.target) > range then
+					CastSpell(hasFlash, flashTs.target.x,flashTs.target.z)				
+				end
+				CastSpell(_Q, flashTs.target)
+				fullCombo(true)
+			else
+				fullCombo(true)
 			end
-			CastSpell(_Q, flashTs.target)
-			fullCombo(true)
 		end
 	end	
 	
@@ -204,7 +212,7 @@ function OnTick()
 	-- LASTHITTING
 	if myHero.health/myHero.maxHealth*100 < DCConfig.lasthitHealthMe and enemysInRangeCount > 0 then return end
 	if lowestEnemyHealth < DCConfig.lasthitHealthEnemy then return end
-	if IsKeyDown(autoCarryKey) then return end --dont lasthit when infight mode
+	if DCConfig.autoCarryKey  then return end --dont lasthit when infight mode
 	
 	if DCConfig.lasthitWithQ == 1 or DCConfig.lasthitWithQ == 3 then
 		local enemyMinions = minionManager(MINION_ENEMY, range, player, MINION_SORT_HEALTH_ASC)
