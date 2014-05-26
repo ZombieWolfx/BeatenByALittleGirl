@@ -1,5 +1,6 @@
 local version = 0.02
 local scriptName = "beatenByALittleGirl"
+SourceUpdater(scriptName, version, "raw.github.com", "/gnomgrol/BeatenByALittleGirl/master/beatenByALittleGirl.lua", SCRIPT_PATH..GetCurrentEnv().FILE_NAME, "/gnomgrol/BeatenByALittleGirl/master/beatenByALittleGirl.version"):CheckUpdate()
 
 
 require "AllClass"
@@ -35,10 +36,9 @@ local tibbersObj = nil
 
 function OnLoad()
 
-	SourceUpdater(scriptName, version, "raw.github.com", "/UnseenJunglerIsTheDeadliest/master/UnseenJunglerIsTheDeadliest.lua", SCRIPT_PATH..GetCurrentEnv().FILE_NAME):CheckUpdate()
 
 
-	print("J4's annie loaded!")
+	print("[---] FUTURE SCRIPT: Beaten by a little girl test[---]")
 	
 	DCConfig = scriptConfig("Beaten by a little girl", "UJISTD")
 	DCConfig:addSubMenu("General: ", "general")
@@ -94,6 +94,10 @@ function OnTick()
 	
 	if isRecalling(myHero) then return end
 
+	if DCConfig.render.enemyRadius == nil then
+	DCConfig.render.enemyRadius = 2000
+	end
+	
 	local closest = DCConfig.render.enemyRadius+1
 	enemysInRange = {}
 	local enemysInRangeCount = 0
