@@ -1,6 +1,6 @@
 local version = 0.02
 local scriptName = "beatenByALittleGirl"
-SourceUpdater(scriptName, version, "raw.github.com", "/gnomgrol/BeatenByALittleGirl/master/beatenByALittleGirl.lua", SCRIPT_PATH..GetCurrentEnv().FILE_NAME, "/gnomgrol/BeatenByALittleGirl/master/beatenByALittleGirl.version"):CheckUpdate()
+--SourceUpdater(scriptName, version, "raw.github.com", "/gnomgrol/BeatenByALittleGirl/master/beatenByALittleGirl.lua", SCRIPT_PATH..GetCurrentEnv().FILE_NAME, "/gnomgrol/BeatenByALittleGirl/master/beatenByALittleGirl.version"):CheckUpdate()
 
 
 require "AllClass"
@@ -38,7 +38,7 @@ function OnLoad()
 
 
 
-	print("[---] FUTURE SCRIPT: Beaten by a little girl test[---]")
+	print("[---] FUTURE SCRIPT: Beaten by a little girl [---]")
 	
 	DCConfig = scriptConfig("Beaten by a little girl", "UJISTD")
 	DCConfig:addSubMenu("General: ", "general")
