@@ -1,11 +1,12 @@
+local version = 0.02
+local scriptName = "beatenByALittleGirl"
+
 
 require "AllClass"
 
 
-if myHero.charName ~= "Annie" then return end
 
---local autoCarryKey = 32
---local flashComboKey = 88
+if myHero.charName ~= "Annie" then return end
 
         
 local hasIgnite, hasFlash = nil, nil
@@ -33,38 +34,46 @@ local tibbersObj = nil
 
 
 function OnLoad()
+
+	SourceUpdater(scriptName, version, "raw.github.com", "/UnseenJunglerIsTheDeadliest/master/UnseenJunglerIsTheDeadliest.lua", SCRIPT_PATH..GetCurrentEnv().FILE_NAME):CheckUpdate()
+
+
 	print("J4's annie loaded!")
 	
 	DCConfig = scriptConfig("Beaten by a little girl", "UJISTD")
+	DCConfig:addSubMenu("General: ", "general")
+	DCConfig.general:addParam("autoCarryKey", "Infight Mode", SCRIPT_PARAM_ONKEYDOWN, false, string.byte(" "))
+	DCConfig.general:addParam("flashComboKey", "Full commit", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
+	DCConfig.general:addParam("mouseWalk", "Mousewalk when infight", SCRIPT_PARAM_ONOFF, true, 32)
+	DCConfig.general:addParam("autoZhonyas", "Auto-Zhonyas on low hp when attacked", SCRIPT_PARAM_ONOFF, true, 32)
 	
-	DCConfig:addParam("autoCarryKey", "Infight Mode", SCRIPT_PARAM_ONKEYDOWN, false, string.byte(" "))
-	DCConfig:addParam("flashComboKey", "Full commit", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
-	DCConfig:addParam("mouseWalk", "Mousewalk when infight", SCRIPT_PARAM_ONOFF, true, 32)
-	
-	DCConfig:addParam("info1", "Lasthitting options:", SCRIPT_PARAM_INFO, "")
-	DCConfig:addParam("lasthitWithQ", "Lasthit with Q", SCRIPT_PARAM_LIST, 1, {"Always", "Never", "No enemys close" })
-	DCConfig:addParam("useStunToLasthit", "Use stun to lasthit", SCRIPT_PARAM_LIST, 3, {"Always", "Never", "No enemys close" })
-	DCConfig:addParam("lasthitHealthEnemy", "Only lasthit if enemy health over: ", SCRIPT_PARAM_SLICE, 20, 0, 100, 0)
-	DCConfig:addParam("lasthitHealthMe", "Only lasthit if own health over: ", SCRIPT_PARAM_SLICE, 20, 0, 100, 0)
+	DCConfig:addSubMenu("Lasthitting: ", "cs")
+	DCConfig.cs:addParam("lasthitWithQ", "Lasthit with Q", SCRIPT_PARAM_LIST, 1, {"Always", "Never", "No enemys close" })
+	DCConfig.cs:addParam("useStunToLasthit", "Use stun to lasthit", SCRIPT_PARAM_LIST, 3, {"Always", "Never", "No enemys close" })
+	DCConfig.cs:addParam("lasthitHealthEnemy", "Only lasthit if enemy health over: ", SCRIPT_PARAM_SLICE, 20, 0, 100, 0)
+	DCConfig.cs:addParam("lasthitHealthMe", "Only lasthit if own health over: ", SCRIPT_PARAM_SLICE, 20, 0, 100, 0)
 	
 	
-	DCConfig:addParam("info2", "Ult options:", SCRIPT_PARAM_INFO, "")
-	DCConfig:addParam("finishKills", "Finish low people with combo", SCRIPT_PARAM_ONOFF, false, 32)
-	DCConfig:addParam("whenToIgnite", "Use Ignite in attack", SCRIPT_PARAM_LIST, 2, {"SBTW", "Only with ult", "Never" })
-	DCConfig:addParam("useAutoUlt", "Auto flash-stun-ult:", SCRIPT_PARAM_ONOFF, true, 32)
-	DCConfig:addParam("autoUltCount", "Auto flash-stun-ult if hits:", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
+	DCConfig:addSubMenu("Ultimate: ", "ult")
+	DCConfig.ult:addParam("finishKills", "Finish low people with combo", SCRIPT_PARAM_ONOFF, false, 32)
+	DCConfig.ult:addParam("whenToIgnite", "Use Ignite in attack", SCRIPT_PARAM_LIST, 2, {"SBTW", "Only with ult", "Never" })
+	DCConfig.ult:addParam("useAutoUlt", "Auto flash-stun-ult:", SCRIPT_PARAM_ONOFF, true, 32)
+	DCConfig.ult:addParam("autoUltCount", "Auto flash-stun-ult if hits:", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
 	
-	DCConfig:addParam("info3", "Autocast options:", SCRIPT_PARAM_INFO, "")
-	DCConfig:addParam("autoE", "Auto-E when attacked", SCRIPT_PARAM_ONOFF, true, 32)
-	DCConfig:addParam("autoQ", "Auto-Q to harass", SCRIPT_PARAM_ONOFF, true, 32)
-	DCConfig:addParam("autoW", "Auto-W to harass", SCRIPT_PARAM_ONOFF, true, 32)
-	DCConfig:addParam("autoHarassCount", "Only harass if enemys less than:", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
 	
-	DCConfig:addParam("info4", "Render options:", SCRIPT_PARAM_INFO, "")
-	DCConfig:addParam("renderUltMarker", "Render best-ult marker:", SCRIPT_PARAM_ONOFF, true, 32)
-	DCConfig:addParam("enemyRadius", "Enemys 'close' radius:", SCRIPT_PARAM_SLICE, 2000, 500, 4000, 0)
-	DCConfig:addParam("renderFlashUltRange", "Render flash-ult range:", SCRIPT_PARAM_ONOFF, true, 32)
-	DCConfig:addParam("renderComboRange", "Render combo range:", SCRIPT_PARAM_ONOFF, true, 32)
+	DCConfig:addSubMenu("Harass: ", "harass")
+	DCConfig.harass:addParam("autoE", "Auto-E when attacked", SCRIPT_PARAM_ONOFF, true, 32)
+	DCConfig.harass:addParam("autoQ", "Auto-Q to harass", SCRIPT_PARAM_ONOFF, true, 32)
+	DCConfig.harass:addParam("autoW", "Auto-W to harass", SCRIPT_PARAM_ONOFF, true, 32)
+	DCConfig.harass:addParam("autoHarassCount", "Only harass if enemys less than:", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
+
+	
+	DCConfig:addSubMenu("Render: ", "render")
+	DCConfig.render:addParam("renderUltMarker", "Render best-ult marker:", SCRIPT_PARAM_ONOFF, true, 32)
+	DCConfig.render:addParam("enemyRadius", "Enemys 'close' radius:", SCRIPT_PARAM_SLICE, 2000, 500, 4000, 0)
+	DCConfig.render:addParam("renderFlashUltRange", "Render flash-ult range:", SCRIPT_PARAM_ONOFF, true, 32)
+	DCConfig.render:addParam("renderComboRange", "Render combo range:", SCRIPT_PARAM_ONOFF, true, 32)
+	
 	
 	for i = 1, heroManager.iCount, 1 do
 		local hero = heroManager:GetHero(i)
@@ -85,7 +94,7 @@ function OnTick()
 	
 	if isRecalling(myHero) then return end
 
-	local closest = DCConfig.enemyRadius+1
+	local closest = DCConfig.render.enemyRadius+1
 	enemysInRange = {}
 	local enemysInRangeCount = 0
 	local lowestEnemyHealth = 101
@@ -96,7 +105,7 @@ function OnTick()
 		if myHero:GetDistance(hero) < closest and myHero:GetDistance(hero) > 0 and not hero.dead and hero.visible then
 			closest = myHero:GetDistance(hero)
 		end
-		if myHero:GetDistance(hero) < DCConfig.enemyRadius and myHero:GetDistance(hero) > 0 and ValidTarget(hero, DCConfig.enemyRadius) then
+		if myHero:GetDistance(hero) < DCConfig.render.enemyRadius and myHero:GetDistance(hero) > 0 and ValidTarget(hero, DCConfig.enemyRadius) then
 			table.insert(enemysInRange, hero)
 			enemysInRangeCount = enemysInRangeCount+1
 			if hero.health/hero.maxHealth*100 < lowestEnemyHealth then
@@ -106,19 +115,22 @@ function OnTick()
 	end
 	
 	for _, hero in pairs(enemyList) do
-		if DCConfig.finishKills and enemysInRangeCount < 3 then 
+		if DCConfig.ult.finishKills and enemysInRangeCount < 3 then 
 			if fullComboDmg(hero) > hero.health and stunReady then
-				fullCombo(false)
+				if myHero:GetDistance(hero) > range and myHero:GetDistance(hero) < range+fRange then
+					CastSpell(hasFlash, hero.x, hero.z)				
+				end
+				fullCombo(true)
 			end
 		end
 	end
 	
-	if DCConfig.autoCarryKey then
+	if DCConfig.general.autoCarryKey then
 		fullCombo(false)
 	end
 	
 	
-	if DCConfig.flashComboKey then
+	if DCConfig.general.flashComboKey then
 
 		if ValidTarget(flashTs.target) then
 			if stunReady then
@@ -141,21 +153,21 @@ function OnTick()
 
 	if stunReady then
 		if enemysInRangeCount < 2 then
-			if DCConfig.autoQ and myHero:CanUseSpell(_Q) == READY and ValidTarget(ts.target, range) then
+			if DCConfig.harass.autoQ and myHero:CanUseSpell(_Q) == READY and ValidTarget(ts.target, range) then
 				CastSpell(_Q, ts.target)
 			end		
 		else
-			if optimalConePos ~= nil and optimalConePos.hits > DCConfig.autoUltCount then
+			if optimalConePos ~= nil and optimalConePos.hits > DCConfig.ult.autoUltCount then
 				CastSpell(_W, optimalConePos.pos.x, optimalConePos.pos.z)
 			end		
 		end
 	else
-		if enemysInRangeCount < DCConfig.autoHarassCount then
-			if DCConfig.autoQ and myHero:CanUseSpell(_Q) == READY and ValidTarget(ts.target, range) then
+		if enemysInRangeCount < DCConfig.harass.autoHarassCount then
+			if DCConfig.harass.autoQ and myHero:CanUseSpell(_Q) == READY and ValidTarget(ts.target, range) then
 				CastSpell(_Q, ts.target)			
 			end
 		
-			if DCConfig.autoW and myHero:CanUseSpell(_W) == READY and ValidTarget(ts.target, wRange) then
+			if DCConfig.harass.autoW and myHero:CanUseSpell(_W) == READY and ValidTarget(ts.target, wRange) then
 				if enemysInRangeCount < 2 and not ts.target.canMove then
 					CastSpell(_W, ts.target)	
 				else
@@ -187,10 +199,10 @@ function OnTick()
 
 	
 	-- AUTO FLASH ULT
-	if DCConfig.useAutoUlt then
+	if DCConfig.ult.useAutoUlt then
 		flashUltPos = getOptimalPos(ultiRange+fRange, ultiRadius)
 			
-		if flashUltPos ~= nil and flashUltPos.hits >= DCConfig.autoUltCount then
+		if flashUltPos ~= nil and flashUltPos.hits >= DCConfig.ult.autoUltCount then
 			if stunReady and myHero:CanUseSpell(_R) == READY and not existTibbers then
 				
 				local vec = flashUltPos.pos
@@ -208,12 +220,12 @@ function OnTick()
 	
 	
 	-- LASTHITTING
-	if myHero.health/myHero.maxHealth*100 < DCConfig.lasthitHealthMe and enemysInRangeCount > 0 then return end
-	if lowestEnemyHealth < DCConfig.lasthitHealthEnemy then return end
-	if DCConfig.autoCarryKey then return end --dont lasthit when infight mode
-	if DCConfig.flashComboKey then return end
+	if myHero.health/myHero.maxHealth*100 < DCConfig.cs.lasthitHealthMe and enemysInRangeCount > 0 then return end
+	if lowestEnemyHealth < DCConfig.cs.lasthitHealthEnemy then return end
+	if DCConfig.general.autoCarryKey then return end --dont lasthit when infight mode
+	if DCConfig.general.flashComboKey then return end
 	
-	if DCConfig.lasthitWithQ == 1 or DCConfig.lasthitWithQ == 3 then
+	if DCConfig.cs.lasthitWithQ == 1 or DCConfig.cs.lasthitWithQ == 3 then
 		local enemyMinions = minionManager(MINION_ENEMY, range, player, MINION_SORT_HEALTH_ASC)
 		for i, minion in pairs(enemyMinions.objects) do
 			if minion ~= nil then
@@ -227,19 +239,19 @@ function OnTick()
 			if myHero:GetDistance(lowestMinion) < range then
 				
 				if not stunReady then
-					if DCConfig.lasthitWithQ == 1 then
+					if DCConfig.cs.lasthitWithQ == 1 then
 						CastSpell(_Q, lowestMinion)
 					else
-						if closest > DCConfig.enemyRadius then
+						if closest > DCConfig.render.enemyRadius then
 							CastSpell(_Q, lowestMinion)
 						end
 					end
 				else
-					if DCConfig.useStunToLasthit == 1 then
+					if DCConfig.cs.useStunToLasthit == 1 then
 						CastSpell(_Q, lowestMinion)
 					end
-					if DCConfig.useStunToLasthit == 3 then
-						if closest > DCConfig.enemyRadius then
+					if DCConfig.cs.useStunToLasthit == 3 then
+						if closest > DCConfig.render.enemyRadius then
 							CastSpell(_Q, lowestMinion)
 						end						
 					end					
@@ -256,24 +268,24 @@ end
 
 function OnDraw()
 	if not myHero.dead then
-		if DCConfig.renderComboRange then
+		if DCConfig.render.renderComboRange then
 		DrawCircle(myHero.x, myHero.y, myHero.z, range, ARGB(100, 0, 150, 255))
 		end
-		if DCConfig.renderFlashUltRange then
+		if DCConfig.render.renderFlashUltRange then
 		DrawCircle(myHero.x, myHero.y, myHero.z, ultiRange+fRange, ARGB(100, 0, 150, 255))
 		end
 	end
 	
 	
-	if flashUltPos ~= nil and DCConfig.useAutoUlt and DCConfig.renderUltMarker and myHero:CanUseSpell(_R) == READY and not existTibbers then
+	if flashUltPos ~= nil and DCConfig.ult.useAutoUlt and DCConfig.render.renderUltMarker and myHero:CanUseSpell(_R) == READY and not existTibbers then
 		DrawText3D(tostring(flashUltPos.hits) .. " hits - Dmg: " .. tostring(math.floor(flashUltPos.dmg)),flashUltPos.pos.x, flashUltPos.pos.y, flashUltPos.pos.z, 16, RGB(255,255,255), true)
 		DrawCircle(flashUltPos.pos.x, flashUltPos.pos.y, flashUltPos.pos.z, ultiRadius, 0x444400)
 	end
 
 	
-	--myHero:GetDistance(hero) < DCConfig.enemyRadius and 
+	
 	for _, hero in pairs(enemyList) do
-		if ValidTarget(hero, DCConfig.enemyRadius) then
+		if ValidTarget(hero, DCConfig.render.enemyRadius) then
 
 			
 			if fullComboDmg(hero) > hero.health then
@@ -290,7 +302,7 @@ end
 
 function fullCombo(fullCommit)
 	-- WOMBO COMBO
-	if DCConfig.mouseWalk then
+	if DCConfig.general.mouseWalk then
 	myHero:MoveTo(mousePos.x,mousePos.z)
 	end
 	
@@ -319,7 +331,7 @@ function fullCombo(fullCommit)
 			
 				CastSpell(_R, p.pos.x,p.pos.z)
 				
-				if DCConfig.whenToIgnite == 2 then
+				if DCConfig.ult.whenToIgnite == 2 then
 					if hasIgnite ~= nil then
 						CastSpell(hasIgnite, ts.target) 
 					end	
@@ -330,7 +342,7 @@ function fullCombo(fullCommit)
 			
 		end
 		
-		if DCConfig.whenToIgnite == 1 and fullCommit then
+		if DCConfig.ult.whenToIgnite == 1 and fullCommit then
 			if hasIgnite ~= nil then
 				CastSpell(hasIgnite, ts.target) 
 			end	
@@ -353,15 +365,17 @@ function OnProcessSpell(unit, spell)
 		if not (spell.name:find("Minion_") or spell.name:find("Odin")) then
 		
 			if spell.target == myHero and unit.team ~= myHero.team then
-				if myHero:CanUseSpell(_E) == READY  and DCConfig.autoE then
+				if myHero:CanUseSpell(_E) == READY  and DCConfig.harass.autoE then
 					CastSpell(_E)
 				end
 				
-				local ZhonyaSlot = GetInventorySlotItem(3157)
-				ZhonyaREADY = (ZhonyaSlot ~= nil and myHero:CanUseSpell(ZhonyaSlot) == READY)
-				
-				if myHero.health/myHero.maxHealth < 0.25 and ZhonyaREADY then
-					CastSpell(ZhonyaSlot)
+				if DCConfig.general.autoZhonyas then
+					local ZhonyaSlot = GetInventorySlotItem(3157)
+					ZhonyaREADY = (ZhonyaSlot ~= nil and myHero:CanUseSpell(ZhonyaSlot) == READY)
+					
+					if myHero.health/myHero.maxHealth < 0.25 and ZhonyaREADY then
+						CastSpell(ZhonyaSlot)
+					end
 				end
 				
 			end
